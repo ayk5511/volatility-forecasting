@@ -1,0 +1,15 @@
+\section{Conclusion}\label{sec:conclusion}
+
+This paper ran a controlled horse race between eight volatility forecasting models on S\&P 500 data from 2004 through 2025, with out-of-sample evaluation over the 2022--2025 period. The results can be summarized in three sentences. GJR-GARCH is the best individual model, because the leverage effect---negative returns driving volatility up more than positive returns of the same magnitude---is the single most valuable signal in a test period dominated by asymmetric drawdowns. Tree-based methods (LightGBM, XGBoost) are strong runners-up that benefit from conditioning on VIX and multi-horizon features. A simple ensemble of LightGBM, HAR-RV, and GARCH beats everything on QLIKE.
+
+A few reflections that go beyond the numbers.
+
+First, the strength of GJR-GARCH is a reminder that a well-specified parametric model can beat machine learning when the parametric assumption happens to match the data-generating process. The leverage effect is real, persistent, and well-captured by the GJR asymmetric term. ML models can learn this asymmetry from data (the ``negative return'' features in our tree models serve a similar purpose), but they have to discover it from noisy examples rather than encoding it structurally. In this particular test period---heavy on asymmetric downside risk---the parametric advantage won.
+
+Second, the underperformance of HAR-RV relative to our expectations warrants comment. HAR has been a perennial strong performer in the volatility forecasting literature, often matching or beating ML models. Our finding that it ranks last on QLIKE is specific to the 2022--2025 test period, which is unusually rich in regime changes. HAR conditions only on past realized volatility and has no access to VIX (a forward-looking, market-implied signal) or to asymmetric response terms. In calmer markets, we suspect HAR would be more competitive.
+
+Third, the ensemble result is the most practically useful finding. A risk manager who maintains three structurally diverse models and averages their forecasts will achieve the best QLIKE without needing to select a single ``winner.'' This approach is robust to model misspecification and insulates against the worst case where any individual model fails in an unfamiliar regime.
+
+We close with limitations. Our comparison is limited to a single asset (the S\&P 500), and the results may not generalize to individual stocks, emerging markets, or other asset classes. We use daily data rather than intraday data; a HAR model with 5-minute realized volatility would likely outperform our daily version. We do not test transformer architectures, which have shown promise in recent work but require substantially more data and compute to train. Finally, our test period, while deliberately challenging, is still only four years long. A longer out-of-sample period would provide stronger evidence, but we are limited by when the models were trained.
+
+All code, data, and results used in this paper are available at [GitHub repository URL]. We encourage replication, extension, and correction.

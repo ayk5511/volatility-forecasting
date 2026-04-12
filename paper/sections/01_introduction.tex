@@ -1,0 +1,23 @@
+\section{Introduction}\label{sec:intro}
+
+Volatility forecasting is one of the few areas in finance where the question ``does this model actually work?'' has a relatively clean answer. Unlike return prediction, where the signal-to-noise ratio is so low that statistical significance is routinely debated, volatility is persistent, clustered, and measurable. A model that forecasts tomorrow's volatility well is immediately useful for option pricing, risk management, portfolio construction, and margin setting. The practical stakes are high, and the evaluation criteria are well-established.
+
+What is less settled is which model works best. The field has accumulated a large zoo of approaches over the past three decades. On one end sit parametric time-series models---the GARCH family introduced by \citet{Bollerslev1986} and extended in dozens of directions (EGARCH, GJR-GARCH, FIGARCH, Realized GARCH, among others). In the middle is the Heterogeneous Autoregressive model for realized volatility (HAR-RV) of \citet{Corsi2009}, which achieves surprisingly good forecasting performance with nothing more than three lagged moving averages of realized volatility. On the other end sit machine learning methods: gradient-boosted trees, recurrent neural networks, and more recently, transformers and attention-based architectures.
+
+Each new paper in this space typically compares its proposed method against one or two baselines and reports a win. The result is a literature that is hard to synthesize. Does LightGBM beat GARCH? It depends on the market, the sample period, the horizon, the loss function, and how carefully the author tuned the GARCH specification. Cross-study comparisons are close to meaningless because no two papers use the same data, features, or evaluation protocol.
+
+This paper runs the horse race that the literature needs. We implement six models---three GARCH variants (GARCH, EGARCH, GJR-GARCH), HAR-RV, LightGBM, and XGBoost---plus a simple equal-weight ensemble, and evaluate all of them on the same data, the same features, the same train/test split, using the same loss functions.\footnote{We initially planned to include LSTM and GRU recurrent networks but encountered persistent numerical instabilities during training that produced unreliable forecasts. Rather than report potentially misleading results, we exclude them. This is itself informative: neural networks for volatility forecasting require more careful implementation than is commonly acknowledged in the literature.} The data is the S\&P 500, which we chose not because US equities are the most interesting market but because they are the most studied, making our results directly comparable to prior work. Our sample runs from January 2004 through December 2025, giving us over 5,400 trading days. The test period starts in January 2022, which means every model must forecast through the 2022 bear market, the 2023 AI-driven rally, and the 2024--2025 rate normalization---a deliberately challenging out-of-sample environment for models trained on pre-pandemic data.
+
+Our contributions are straightforward:
+
+\begin{enumerate}[leftmargin=*]
+    \item We provide the first head-to-head comparison of this many model families on post-pandemic US equity volatility data. Most existing comparisons end their test samples before 2020 or shortly after, missing the regime changes that followed.
+
+    \item We evaluate models using QLIKE \citep{Patton2011}, the theoretically preferred loss function for volatility forecasting, alongside RMSE and Mincer-Zarnowitz $R^2$. Many ML papers in this space report only RMSE, which can give misleading rankings when forecast errors are heteroskedastic (as they always are for volatility).
+
+    \item We test a simple equal-weight ensemble and show that it consistently matches or beats every individual model. This is a useful practical finding: rather than spending effort selecting the ``best'' model, a risk manager can simply average three diverse forecasters.
+
+    \item All code, data, and trained models are publicly available, enabling exact replication. We consider this non-negotiable for a paper that claims to rank forecasting methods.
+\end{enumerate}
+
+The rest of the paper is organized as follows. \Cref{sec:literature} reviews the volatility forecasting literature with a focus on the ML methods introduced since 2015. \Cref{sec:data} describes our data and the construction of realized volatility measures. \Cref{sec:methodology} details each forecasting model and our evaluation protocol. \Cref{sec:results} presents the main results. \Cref{sec:robustness} reports robustness checks across horizons, subperiods, and loss functions. \Cref{sec:conclusion} concludes.

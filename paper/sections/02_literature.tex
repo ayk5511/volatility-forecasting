@@ -1,0 +1,39 @@
+\section{Related Literature}\label{sec:literature}
+
+Volatility forecasting has a deep literature, and we do not attempt to survey it comprehensively---\citet{Poon2003} and \citet{Andersen2006} provide book-length treatments. Instead, we focus on the developments most relevant to our comparison: the GARCH family, realized volatility models, and the ML approaches that have emerged since roughly 2015.
+
+\subsection{GARCH Models}
+
+The GARCH(1,1) model of \citet{Bollerslev1986} remains the workhorse of conditional volatility modeling. Its asymmetric variants---the EGARCH of \citet{Nelson1991} and the GJR-GARCH of \citet{Glosten1993}---capture the leverage effect (negative returns increase volatility more than positive returns of the same magnitude), a well-documented empirical regularity. \citet{Hansen2005} conduct a large-scale comparison of 330 GARCH variants and conclude that no model consistently dominates the simple GARCH(1,1), a finding that influenced our decision to include the standard specification alongside EGARCH and GJR-GARCH rather than searching for exotic variants.
+
+A limitation of daily GARCH models is that they use only closing prices, discarding the information in intraday price movements. This motivates the realized volatility approach.
+
+\subsection{Realized Volatility and the HAR Model}
+
+Realized volatility (RV), computed as the sum of squared intraday returns, provides a more accurate measure of true volatility than GARCH-implied estimates \citep{Andersen2003}. The Heterogeneous Autoregressive (HAR) model of \citet{Corsi2009} forecasts RV using three components---daily, weekly, and monthly lagged RV---motivated by the heterogeneous market hypothesis that traders at different horizons contribute to different volatility dynamics. Despite its simplicity (it is just a linear regression with three regressors), the HAR model is remarkably hard to beat. \citet{Bollerslev2016} extend HAR with jump components and find modest improvements. \citet{Patton2015} show that the HAR structure captures the long-memory properties of volatility well.
+
+When intraday data is unavailable (as is the case for many practitioners and for longer historical samples), daily proxies for realized volatility can be constructed from daily OHLC prices using range-based estimators \citep{Parkinson1980, GarmanKlass1980}. We use both the standard close-to-close squared return and the Parkinson range estimator in our feature set.
+
+\subsection{Machine Learning Approaches}
+
+The application of ML to volatility forecasting has grown rapidly since 2015, though the literature is more scattered than for return prediction.
+
+\subsubsection{Neural Networks}
+
+\citet{Bucci2020} compares LSTM networks to GARCH and HAR-RV for S\&P 500 realized volatility and finds that LSTMs improve on GARCH during high-volatility episodes but show marginal gains in calm markets. \citet{Kim2019} apply attention-augmented LSTMs to volatility forecasting on Korean equity data. \citet{Rahimikia2021} show that combining macroeconomic text data with neural network models improves volatility forecasts, though disentangling the contribution of the model from the contribution of the data is difficult.
+
+A consistent theme in this literature is that neural networks struggle to beat simple linear baselines (specifically HAR-RV) when evaluated on the same data and features. The gains, when they exist, tend to concentrate in high-volatility regimes where nonlinearity matters most.
+
+\subsubsection{Tree-Based Methods}
+
+Gradient-boosted trees have received less attention for volatility forecasting than for return prediction, but the existing evidence is positive \citep[see also the survey by][]{Khan2026}. \citet{Mittnik2022} benchmark LightGBM against 14 other methods on 20 equity indices and find that LightGBM achieves the best average performance, with the advantage concentrated in forecasting regime transitions. \citet{Luong2021} report similar findings using random forests with a large feature set that includes options-implied features.
+
+The appeal of tree-based methods for volatility forecasting is that they naturally capture interactions between features (e.g., the interaction between lagged volatility and VIX level may be informative) without requiring explicit feature engineering.
+
+\subsubsection{Forecast Combination}
+
+A robust finding across the forecasting literature---not just in finance---is that combining forecasts from multiple models typically outperforms any individual model \citep{Timmermann2006}. For volatility specifically, \citet{Patton2019} show that simple equal-weight combinations of volatility forecasts are competitive with sophisticated combination schemes based on past performance. This motivates our inclusion of a simple ensemble as a benchmark.
+
+\subsection{Gap in the Literature}
+
+To our knowledge, no existing study compares GARCH, HAR, and tree-based model families head-to-head on the same post-pandemic data using QLIKE as the primary evaluation metric. This is the gap we fill.

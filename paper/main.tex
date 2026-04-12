@@ -1,0 +1,73 @@
+\documentclass[12pt,a4paper]{article}
+
+% === Packages ===
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{float}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=green!50!black,
+    urlcolor=blue!70!black
+}
+
+\onehalfspacing
+
+% === Title ===
+\title{Volatility Forecasting with Machine Learning:\\A Horse Race Across GARCH, HAR, and Tree-Based Models}
+
+\author{
+    Akram Khan\thanks{Independent Researcher. ORCID: \href{https://orcid.org/0009-0002-7521-8648}{0009-0002-7521-8648}. Email: akramkhan@ucla.edu}
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We conduct a comprehensive out-of-sample comparison of volatility forecasting methods on S\&P 500 realized volatility from 2004 through 2025. Our horse race includes three GARCH variants (GARCH, EGARCH, GJR-GARCH), the Heterogeneous Autoregressive model of \citet{Corsi2009}, gradient-boosted trees (LightGBM, XGBoost), and a simple equal-weight ensemble. We evaluate all models on a post-2021 test period that includes the 2022 bear market, the 2023 rally, and the 2024--2025 rate environment---a deliberately challenging regime for models trained on pre-pandemic data. Using QLIKE, RMSE, and Mincer-Zarnowitz $R^2$ as evaluation criteria, we find that GJR-GARCH---the asymmetric specification that gives negative returns a larger weight---is the best individual model, outperforming both tree-based methods and standard GARCH. This result highlights the dominant role of the leverage effect in a test period characterized by asymmetric drawdowns. LightGBM and XGBoost rank second and third among individual models, confirming that tree-based methods benefit from conditioning on VIX and multi-horizon features, though they do not surpass a well-specified GARCH. A simple equal-weight ensemble of LightGBM, HAR-RV, and GARCH achieves the lowest QLIKE overall, confirming that forecast combination remains the most reliable strategy. All code and data used in this study are publicly available.
+
+\medskip
+\noindent\textbf{Keywords:} volatility forecasting, realized volatility, GARCH, HAR-RV, machine learning, LightGBM, XGBoost, forecast combination, S\&P 500
+
+\medskip
+\noindent\textbf{JEL Classification:} C22, C45, C53, G17
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+% === Sections ===
+\input{sections/01_introduction}
+\input{sections/02_literature}
+\input{sections/03_data}
+\input{sections/04_methodology}
+\input{sections/05_results}
+\input{sections/06_robustness}
+\input{sections/07_conclusion}
+
+% === References ===
+\bibliographystyle{apalike}
+\bibliography{bib/references}
+
+\end{document}

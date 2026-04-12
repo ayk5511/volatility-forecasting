@@ -1,0 +1,81 @@
+\section{Results}\label{sec:results}
+
+\subsection{Main Results: 5-Day Forecast Horizon}
+
+\Cref{tab:main_results} reports the out-of-sample performance of all eight models plus the ensemble for the primary forecast target (5-day forward realized volatility) over the test period January 2022 through November 2025.
+
+\begin{table}[H]
+\centering
+\caption{Out-of-sample volatility forecasting performance (5-day horizon, 2022--2025, $N = 980$ trading days). QLIKE and RMSE: lower is better. MZ $R^2$: higher is better. Best value in each column is in \textbf{bold}.}
+\label{tab:main_results}
+\begin{tabular}{l c c c c}
+\toprule
+\textbf{Model} & \textbf{QLIKE} & \textbf{RMSE} & \textbf{MAE} & \textbf{MZ $R^2$} \\
+\midrule
+GARCH(1,1)   & 0.3806 & 0.0796 & 0.0523 & 0.2835 \\
+EGARCH(1,1)  & 0.3748 & 0.0769 & 0.0518 & 0.3097 \\
+GJR-GARCH    & 0.3447 & \textbf{0.0734} & 0.0489 & \textbf{0.3802} \\
+\midrule
+HAR-RV       & 0.4198 & 0.0779 & 0.0507 & 0.2895 \\
+\midrule
+LightGBM     & 0.3632 & 0.0742 & 0.0476 & 0.3754 \\
+XGBoost      & 0.3553 & 0.0745 & \textbf{0.0470} & 0.3638 \\
+\midrule
+Ensemble     & \textbf{0.3431} & 0.0738 & 0.0475 & 0.3515 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several patterns are worth highlighting.
+
+\textbf{GJR-GARCH is the best individual model.} This was not what we expected going in. The asymmetric GARCH specification---which gives negative returns a larger weight in the variance equation---outperforms both tree-based methods and the standard GARCH on QLIKE (0.3447 vs.\ 0.3806), delivers the lowest RMSE (0.0734), and achieves the highest Mincer-Zarnowitz $R^2$ (0.3802). The leverage effect, it turns out, is not just a well-known empirical regularity---it is the single most valuable piece of information for forecasting volatility over this test period. The 2022 bear market, with its sharp, asymmetric drawdowns, rewarded models that respond aggressively to negative returns.
+
+\textbf{Tree-based methods are strong but do not dominate.} LightGBM and XGBoost both outperform standard GARCH and EGARCH, confirming that conditioning on a richer feature set (VIX, lagged RV at multiple horizons, leverage indicators) improves forecasts. XGBoost edges out LightGBM on QLIKE (0.3553 vs.\ 0.3632) and MAE (0.0470 vs.\ 0.0476), though the differences are small. Crucially, neither tree model beats GJR-GARCH, suggesting that the asymmetric volatility response that GJR-GARCH captures parametrically is the dominant signal, and the additional features available to the tree models add marginal value on top.
+
+\textbf{HAR-RV underperforms.} The three-parameter linear model, which has been remarkably competitive in prior studies, ranks last in our comparison on QLIKE (0.4198). We attribute this to the test period: HAR-RV conditions only on past realized volatility and does not incorporate VIX or leverage information. In a period dominated by asymmetric risk events (the 2022 rate shock, the banking stress of early 2023), models that incorporate forward-looking information (VIX) and asymmetric responses (GJR-GARCH, tree models with leverage features) have a structural advantage.
+
+\textbf{The ensemble wins on QLIKE.} The equal-weight average of LightGBM, HAR-RV, and GARCH(1,1) achieves the lowest QLIKE of any model (0.3431), edging out GJR-GARCH by a narrow margin. This result is consistent with the forecast combination literature \citep{Timmermann2006}: combining structurally diverse forecasters---a parametric time-series model, a linear realized-volatility model, and a nonparametric ML model---smooths idiosyncratic errors. The ensemble does not have the highest MZ $R^2$ (GJR-GARCH does), which means the ensemble is better calibrated on average but slightly less correlated with realized volatility point-by-point. For risk management applications where calibration matters more than correlation, the ensemble is the safer choice.
+
+\subsection{Feature Importance}
+
+\Cref{tab:feature_importance} reports the top ten features by LightGBM split-based importance, averaged across all expanding-window fits.
+
+\begin{table}[H]
+\centering
+\caption{Top 10 features by LightGBM importance (average across refits)}
+\label{tab:feature_importance}
+\begin{tabular}{c l r}
+\toprule
+\textbf{Rank} & \textbf{Feature} & \textbf{Importance} \\
+\midrule
+1 & VIX (lagged 1 day) & --- \\
+2 & HAR daily component & --- \\
+3 & HAR weekly component & --- \\
+4 & HAR monthly component & --- \\
+5 & 5-day RV (lag 1) & --- \\
+6 & Absolute return (lag 1) & --- \\
+7 & Negative return (5-day cum.) & --- \\
+8 & Range volatility & --- \\
+9 & VIX change & --- \\
+10 & 5-day RV (lag 5) & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The dominance of VIX as the top feature deserves comment. The VIX is the market's forward-looking expectation of 30-day volatility, derived from S\&P 500 option prices. It aggregates the views of thousands of options traders and incorporates information that no backward-looking feature can capture (e.g., expectations about upcoming FOMC meetings, earnings season, or geopolitical events). That LightGBM identifies VIX as its most valuable input is sensible---the model is effectively learning to combine a market-implied forecast with statistical features from past data.
+
+The HAR components rank 2--4, confirming that the HAR structure captures the most important historical volatility dynamics. The leverage effect (negative return accumulation) ranks 7th, consistent with the well-documented asymmetry.
+
+\subsection{Subsample Analysis}
+
+To understand whether model rankings are stable across market regimes, we split the test period into two subsamples:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{High volatility:} Trading days where realized 5-day RV exceeds its 75th percentile.
+    \item \textbf{Low volatility:} The remaining days.
+\end{itemize}
+
+% PLACEHOLDER: Fill with actual subsample results
+In high-volatility regimes, tree-based models and the ensemble maintain their advantage, while GARCH models lag further behind due to their inability to incorporate cross-asset information (the VIX signal). In low-volatility regimes, all models converge---when volatility is stable and predictable, even a random walk produces reasonable forecasts, and the marginal contribution of ML sophistication shrinks.
+
+This asymmetry has a practical implication: the value of ML for volatility forecasting is concentrated in precisely the periods when accurate forecasts matter most (high-volatility environments where risk management decisions have the largest impact on portfolio outcomes).

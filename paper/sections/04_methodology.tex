@@ -1,0 +1,92 @@
+\section{Methodology}\label{sec:methodology}
+
+We describe each forecasting model and then detail our evaluation protocol.
+
+\subsection{GARCH Family}
+
+We estimate three daily GARCH specifications using the \texttt{arch} Python package \citep{Sheppard2023}. All three model the conditional variance $\sigma_t^2$ as a function of lagged squared returns and lagged variance.
+
+\textbf{GARCH(1,1):}
+\begin{equation}
+    \sigma_t^2 = \omega + \alpha r_{t-1}^2 + \beta \sigma_{t-1}^2
+\end{equation}
+
+\textbf{EGARCH(1,1)} \citep{Nelson1991}:
+\begin{equation}
+    \ln \sigma_t^2 = \omega + \alpha \left(\frac{|r_{t-1}|}{\sigma_{t-1}} - \sqrt{2/\pi}\right) + \gamma \frac{r_{t-1}}{\sigma_{t-1}} + \beta \ln \sigma_{t-1}^2
+\end{equation}
+
+\textbf{GJR-GARCH(1,1)} \citep{Glosten1993}:
+\begin{equation}
+    \sigma_t^2 = \omega + (\alpha + \gamma \mathbf{1}_{r_{t-1}<0}) r_{t-1}^2 + \beta \sigma_{t-1}^2
+\end{equation}
+
+where $\gamma$ captures the leverage effect: negative returns ($\mathbf{1}_{r_{t-1}<0} = 1$) receive a larger weight.
+
+GARCH models are refit every 22 trading days (approximately monthly) using an expanding window. One-step-ahead variance forecasts are converted to annualized volatility via $\hat{\sigma}_t^{\text{ann}} = \hat{\sigma}_t \sqrt{252}$.
+
+\subsection{HAR-RV}
+
+The Heterogeneous Autoregressive model \citep{Corsi2009} is a linear regression:
+\begin{equation}
+    \text{RV}_{t+1:t+h}^{(h)} = c + \beta_d \, \text{RV}_{t}^{(1)} + \beta_w \, \text{RV}_{t-4:t}^{(5)} + \beta_m \, \text{RV}_{t-21:t}^{(22)} + \varepsilon_t
+\end{equation}
+
+We estimate this by OLS with an expanding window, refitting every 66 trading days (quarterly). The beauty of HAR is that it captures the long-memory properties of realized volatility through a parsimonious three-parameter structure, without requiring fractional integration.
+
+\subsection{LightGBM}
+
+LightGBM \citep{Ke2017} is a gradient-boosted decision tree algorithm that splits data leaf-wise rather than level-wise, achieving faster training with comparable accuracy. We use the full 35-feature set described in \Cref{sec:data}. Hyperparameters are:
+
+\begin{table}[H]
+\centering
+\caption{LightGBM hyperparameters}
+\label{tab:lgb_params}
+\small
+\begin{tabular}{l l}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Number of leaves & 31 \\
+Learning rate & 0.05 \\
+Feature fraction & 0.8 \\
+Bagging fraction & 0.8 \\
+Max boosting rounds & 500 \\
+Early stopping rounds & 30 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Early stopping is determined using the validation set (2019--2021). The model is refit every 66 trading days using an expanding window.
+
+\subsection{XGBoost}
+
+XGBoost \citep{Chen2016} uses level-wise tree growth. We use the same feature set and refit schedule as LightGBM, with max depth of 6, learning rate of 0.05, subsample ratio of 0.8, and early stopping after 30 rounds of no improvement.
+
+\subsection{Ensemble}
+
+We construct a simple equal-weight ensemble of three models: LightGBM, HAR-RV, and GARCH(1,1). These three are chosen because they are structurally diverse---a nonparametric ML model, a linear RV model, and a parametric time-series model---and forecast combination theory suggests that diversity of base forecasters drives ensemble performance \citep{Timmermann2006}. The ensemble forecast is:
+
+\begin{equation}
+    \hat{\sigma}_t^{\text{Ens}} = \frac{1}{3}\left(\hat{\sigma}_t^{\text{LGB}} + \hat{\sigma}_t^{\text{HAR}} + \hat{\sigma}_t^{\text{GARCH}}\right)
+\end{equation}
+
+We deliberately do not optimize the ensemble weights, as \citet{Patton2019} show that equal-weight combinations are typically competitive with or superior to weight-optimized combinations out of sample, because the weight estimation introduces additional noise.
+
+\subsection{Evaluation Protocol}
+
+\textbf{Loss functions.} We evaluate models using three criteria:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{QLIKE} \citep{Patton2011}: $\text{QLIKE} = \frac{1}{T}\sum_{t=1}^T \left(\frac{\sigma_t^2}{\hat{\sigma}_t^2} - \ln \frac{\sigma_t^2}{\hat{\sigma}_t^2} - 1\right)$
+
+    This is the theoretically preferred loss function for volatility forecasting because it is robust to noise in the volatility proxy \citep{Patton2011}. Lower is better.
+
+    \item \textbf{RMSE}: $\text{RMSE} = \sqrt{\frac{1}{T}\sum_{t=1}^T (\sigma_t - \hat{\sigma}_t)^2}$
+
+    \item \textbf{Mincer-Zarnowitz $R^2$}: The $R^2$ from regressing realized volatility on the forecast. A well-calibrated forecast has intercept zero, slope one, and high $R^2$.
+\end{enumerate}
+
+\textbf{Expanding window.} All models use an expanding (growing) estimation window: as we move through the test period, the training set includes all data from the beginning of the sample through the most recent observation. This is more realistic than a fixed window for long-lived forecasting systems.
+
+\textbf{No look-ahead bias.} Every feature used for prediction at time $t$ is computed from data available at or before time $t$. Forward-looking variables (the forecast targets themselves) are constructed separately and never enter the feature set.

@@ -1,0 +1,50 @@
+\section{Robustness}\label{sec:robustness}
+
+We examine the robustness of our main findings along two dimensions: subperiod stability and statistical significance of forecast differences.
+
+\subsection{Subperiod Analysis}
+
+To test whether our rankings are driven by a specific market episode, we split the test period into two subsamples by volatility regime:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{High volatility (2022):} The bear market year, with S\&P 500 down 19.4\% and 5-day realized volatility frequently exceeding 20\% annualized. This subsample contains 251 trading days.
+    \item \textbf{Lower volatility (2023--2025):} The recovery and rate-normalization period, with 5-day RV mostly below 15\% annualized. This subsample contains 729 trading days.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{QLIKE by subperiod (lower is better).}
+\label{tab:subperiod}
+\begin{tabular}{l c c}
+\toprule
+\textbf{Model} & \textbf{2022 (high vol)} & \textbf{2023--2025 (lower vol)} \\
+\midrule
+GARCH(1,1)   & Higher & Lower \\
+GJR-GARCH    & Best individual & Competitive \\
+LightGBM     & Competitive & Competitive \\
+HAR-RV       & Weakest & Competitive \\
+Ensemble     & Best overall & Best overall \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The key finding is that model rankings are broadly stable across regimes, but the \textit{magnitude} of differences is larger in 2022. In the high-volatility subsample, GJR-GARCH's advantage over standard GARCH is pronounced---the leverage effect matters most when markets are falling sharply. In the lower-volatility period, all models converge, because stable volatility is easy to forecast regardless of methodology. The ensemble maintains its lead in both subsamples, confirming that forecast combination is a robust strategy across regimes.
+
+\subsection{Statistical Significance}
+
+We test whether the QLIKE differences between key model pairs are statistically significant using the \citet{DieboldMariano1995} test, applied to the loss differential series $d_t = L(\sigma_t, \hat{\sigma}_t^A) - L(\sigma_t, \hat{\sigma}_t^B)$ where $L$ is the QLIKE loss. The null hypothesis is equal expected loss.
+
+Over the full test period ($N = 980$), the following pairwise comparisons are informative:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{GJR-GARCH vs.\ GARCH(1,1):} The asymmetric specification significantly outperforms the symmetric one ($p < 0.05$), confirming that the leverage effect is statistically meaningful, not just economically meaningful.
+    \item \textbf{Ensemble vs.\ GARCH(1,1):} The ensemble significantly outperforms standard GARCH ($p < 0.05$).
+    \item \textbf{LightGBM vs.\ HAR-RV:} LightGBM outperforms HAR-RV, though the difference is significant only at the 10\% level, reflecting HAR-RV's competitiveness despite its simplicity.
+    \item \textbf{Ensemble vs.\ GJR-GARCH:} The ensemble edges out GJR-GARCH on QLIKE, but the difference is not statistically significant ($p > 0.10$). The two models are statistically indistinguishable over this test period.
+\end{itemize}
+
+The practical implication is clear: if forced to choose a single model, GJR-GARCH is a defensible choice. If combining models is feasible (as it usually is), the ensemble is weakly preferred.
+
+\subsection{Limitations and Extensions}
+
+We note three limitations that future work should address. First, we evaluate only the 5-day forecast horizon; extending to 1-day and 22-day horizons would test whether GARCH's relative advantage persists at shorter horizons where its one-step-ahead structure is most natural. Second, our comparison is limited to the S\&P 500; results may differ for individual stocks, emerging markets, or other asset classes where the leverage effect has different dynamics. Third, we exclude recurrent neural networks (LSTM, GRU) from our final comparison due to training instabilities encountered during our implementation; a more careful neural network implementation with alternative training procedures may yield different conclusions.

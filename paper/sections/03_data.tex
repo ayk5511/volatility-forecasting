@@ -1,0 +1,80 @@
+\section{Data}\label{sec:data}
+
+\subsection{Sample}
+
+We use daily data for the S\&P 500 index (ticker \texttt{\^{}GSPC}) and the CBOE Volatility Index (VIX, ticker \texttt{\^{}VIX}) from January 2, 2004 through December 30, 2025, obtained from Yahoo Finance. The sample contains 5,534 trading days before feature construction and 5,446 usable observations after accounting for the rolling windows needed to compute lagged features and forward targets.
+
+We divide the sample into three periods:
+
+\begin{table}[H]
+\centering
+\caption{Sample periods}
+\label{tab:sample}
+\begin{tabular}{l l l l}
+\toprule
+\textbf{Period} & \textbf{Dates} & \textbf{Trading days} & \textbf{Purpose} \\
+\midrule
+Training & 2004--2018 & $\sim$3,770 & Model fitting \\
+Validation & 2019--2021 & $\sim$756 & Hyperparameter tuning, early stopping \\
+Test & 2022--2025 & $\sim$1,000 & Out-of-sample evaluation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The test period is deliberately set to begin in January 2022. This choice is motivated by two considerations. First, it ensures that all models are evaluated on data that is genuinely out of sample---no model sees any post-2021 data during training or validation. Second, the 2022--2025 period is a challenging forecasting environment: it includes the 2022 bear market (S\&P 500 down 19.4\%), the 2023 recovery, the 2024 rate-cut expectations rally, and the 2025 post-election regime. A model that performs well in this period has demonstrated robustness to regime change.
+
+\subsection{Volatility Measures}
+
+We construct realized volatility from daily returns following standard practice:
+
+\textbf{Log returns.} Daily log returns are computed as $r_t = \ln(P_t / P_{t-1})$, where $P_t$ is the closing price on day $t$.
+
+\textbf{Realized volatility.} For a given window of $h$ days, realized volatility is:
+\begin{equation}
+    \text{RV}_{t}^{(h)} = \sqrt{\frac{252}{h} \sum_{i=0}^{h-1} r_{t-i}^2}
+\end{equation}
+where the $\sqrt{252}$ factor annualizes the measure. We compute RV at three horizons: $h = 5$ (weekly), $h = 22$ (monthly), and $h = 66$ (quarterly).
+
+\textbf{Parkinson range estimator.} As an alternative daily volatility proxy that uses more of the available price information:
+\begin{equation}
+    \sigma_t^{\text{Parkinson}} = \sqrt{\frac{1}{4 \ln 2} \left(\ln \frac{H_t}{L_t}\right)^2}
+\end{equation}
+where $H_t$ and $L_t$ are the daily high and low prices \citep{Parkinson1980}.
+
+\textbf{Forecast target.} Our primary forecast target is the 5-day forward realized volatility, $\text{RV}_{t+1:t+5}^{(5)}$. We also report results for the 1-day and 22-day horizons in the robustness section.
+
+\subsection{Summary Statistics}
+
+\begin{table}[H]
+\centering
+\caption{Summary statistics (full sample, 2004--2025)}
+\label{tab:summary}
+\begin{tabular}{l r r r r r r}
+\toprule
+& \textbf{Mean} & \textbf{Std} & \textbf{Min} & \textbf{Q25} & \textbf{Median} & \textbf{Max} \\
+\midrule
+Daily log return    & 0.0003 & 0.0120 & $-$0.1277 & $-$0.0041 & 0.0007 & 0.1096 \\
+RV (5-day, ann.)    & 0.1481 & 0.1190 &    0.0097 &    0.0785 & 0.1184 & 1.4268 \\
+RV (22-day, ann.)   & 0.1562 & 0.1081 &    0.0372 &    0.0946 & 0.1261 & 0.9355 \\
+VIX (close)         & 19.02  & 8.55   &    9.14   &   13.45   & 16.59  & 82.69  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several features of this data are worth noting. First, the distribution of realized volatility is heavily right-skewed: the mean (14.8\%) is well above the median (11.8\%), reflecting occasional volatility spikes (the GFC in 2008, the COVID crash in March 2020, and the 2022 sell-off). Second, the VIX---which represents the market's expectation of 30-day forward volatility implied by S\&P 500 options---is on average higher than 22-day realized volatility, consistent with the well-documented variance risk premium. Third, the maximum 5-day RV of 142.7\% (annualized) occurred during March 2020, which we deliberately include in the training set so that models are exposed to at least one extreme stress event during fitting.
+
+\subsection{Feature Construction}
+
+We construct 35 features for the ML models, all strictly backward-looking to avoid look-ahead bias:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{HAR components:} Daily ($\text{RV}_{t-1}^{(1)}$), weekly ($\text{RV}_{t-5:t-1}^{(5)}$), and monthly ($\text{RV}_{t-22:t-1}^{(22)}$) lagged realized volatility.
+    \item \textbf{Lagged RV and absolute returns:} Lags 1, 2, 3, 5, 10, and 22 of both 5-day RV and daily absolute returns.
+    \item \textbf{VIX features:} Lagged VIX level (1-day and 5-day average) and VIX daily change.
+    \item \textbf{Asymmetry:} Cumulative negative and positive returns over the past 5 days, capturing the leverage effect.
+    \item \textbf{Range volatility:} The Parkinson estimator.
+    \item \textbf{Volume:} Log trading volume, volume change, and volume relative to its 22-day moving average.
+    \item \textbf{Calendar:} Day-of-week indicators (Monday through Friday).
+\end{itemize}
+
+The GARCH models use only the return series (they estimate their own conditional variance), while the HAR model uses only its three canonical components. The tree-based models (LightGBM, XGBoost) use the full feature set.
