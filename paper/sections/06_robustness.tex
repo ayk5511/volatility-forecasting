@@ -33,31 +33,35 @@ The interpretation we favor is that 2022 was structurally out-of-distribution fo
 
 \subsection{Subperiod Analysis: Volatility Regime}
 
-A second split conditions on the realized volatility level itself rather than the calendar. We classify each test-day as \emph{high} or \emph{lower} regime based on whether actual 5-day RV exceeds the 75th percentile of test-period RV (threshold $\approx$ 14.4\% annualized). Compared with the calendar split, this isolates regime effects from secular calendar dynamics.
+A second split conditions on the realized volatility level itself rather than the calendar. We classify each test-day as \emph{high} or \emph{lower} regime based on whether actual 5-day RV exceeds the 75th percentile of test-period RV (threshold 19.05\% annualized). Compared with the calendar split, this isolates regime effects from secular calendar dynamics.
 
 \begin{table}[H]
 \centering
 \small
-\caption{QLIKE by realized-volatility regime, top-quartile RV vs.\ remaining three quartiles.}
+\caption{QLIKE by realized-volatility regime, top-quartile RV vs.\ remaining three quartiles. \textbf{Bold} = best in column.}
 \label{tab:subperiod_regime}
 \begin{tabular}{l c c}
 \toprule
 \textbf{Model} & \shortstack{\textbf{High vol}\\\textbf{(top quartile, $N$=245)}} & \shortstack{\textbf{Lower vol}\\\textbf{(bottom 3Q, $N$=735)}} \\
 \midrule
-GARCH(1,1)   & 0.4154          & 0.3690 \\
-EGARCH       & 0.3829          & 0.3721 \\
-GJR-GARCH    & \textbf{0.3303} & 0.3495 \\
-HAR-RV       & 0.7140          & 0.3217 \\
-LightGBM     & 0.4502          & \textbf{0.3343} \\
-XGBoost      & 0.4250          & 0.3321 \\
-Ensemble     & 0.4232          & 0.3164 \\
+GARCH(1,1)   & 0.6913          & 0.2770          \\
+EGARCH       & \textbf{0.6252} & 0.2913          \\
+GJR-GARCH    & 0.6282          & 0.2502          \\
+HAR-RV       & 0.9015          & 0.2592          \\
+LightGBM     & 0.7276          & 0.2418          \\
+XGBoost      & 0.6841          & 0.2457          \\
+Ensemble     & 0.6850          & \textbf{0.2291} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Two patterns emerge. First, GJR-GARCH is the best individual model in the high-RV quartile (QLIKE 0.3303), confirming that the asymmetric specification handles tail-volatility days better than the others. HAR-RV collapses (QLIKE 0.7140) in this quartile because the linear regression on past RV cannot extrapolate to the highest RV days; this dominates HAR-RV's weak full-sample showing. Second, in the lower-volatility quartiles, the differences across models compress and the rank order changes again, with LightGBM and XGBoost narrowly ahead and the ensemble at 0.3164 essentially tied.
+Three patterns emerge. First, in the high-RV quartile, the GARCH family clusters at the top: EGARCH leads at QLIKE 0.6252, GJR-GARCH essentially tied at 0.6282, GARCH(1,1) at 0.6913. The asymmetric specifications hold up best on tail-volatility days, but the gap to the symmetric GARCH(1,1) is small. HAR-RV collapses to QLIKE 0.9015 in this quartile because the linear regression on past RV cannot extrapolate to days of extreme realized volatility; this single failure mode dominates HAR-RV's weak full-sample showing. LightGBM is second-worst at 0.7276 in the high-vol quartile, consistent with the calendar-year picture in 2022 where it ranked last.
 
-These two splits tell a consistent story: the full-sample QLIKE ranking averages over qualitatively different forecasting environments, and a practitioner who reads only the full-sample number is missing where each model fails.
+Second, in the lower-volatility quartiles, the ordering inverts and the ensemble wins clearly: Ensemble 0.2291, LightGBM 0.2418, XGBoost 0.2457, GJR-GARCH 0.2502, HAR-RV 0.2592, GARCH 0.2770, EGARCH 0.2913. The ensemble's roughly 130-basis-point lead over LightGBM is larger than any spread in the high-vol quartile, and the GARCH-family models, especially EGARCH, become the worst performers. This is the mirror image of the high-vol picture: EGARCH was best when RV was extreme and is now last when RV is moderate.
+
+Third, the regime split decomposes HAR-RV's full-sample weakness cleanly. HAR-RV ranks fifth out of seven in the lower-vol quartiles (QLIKE 0.2592), only modestly behind GJR-GARCH at 0.2502, but its high-vol QLIKE of 0.9015 is so much worse than the field that it drags the full-sample average to last place. Knowing this, a practitioner who deploys HAR-RV could either gate it off when VIX exceeds a threshold or combine it with a tail-aware backstop, both of which are out of scope here but follow directly from the regime decomposition.
+
+These two splits tell a consistent story: the full-sample QLIKE ranking averages over qualitatively different forecasting environments, and a practitioner who reads only the full-sample number is missing where each model fails. The ensemble's claim to robustness is sharpened: it ranks fourth in the high-vol quartile but first in the lower-vol quartile, which is a more defensible profile than any single model's "best-on-average" win.
 
 \subsection{Statistical Significance}
 
