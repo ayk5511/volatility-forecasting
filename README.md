@@ -51,7 +51,8 @@ volatility-forecasting/
 │   ├── 02_models.py                       # Reference model module
 │   ├── 03_run_core_models.py              # Main runner (GARCH + HAR + LightGBM + XGBoost + Ensemble)
 │   ├── 04_subperiod_and_importance.py     # Subperiod metrics + LightGBM split-importance
-│   └── 05_dm_tests.py                     # Diebold-Mariano two-sided tests with HAC SE
+│   ├── 05_dm_tests.py                     # Diebold-Mariano two-sided tests with HAC SE
+│   └── 06_audit.py                        # End-to-end audit: re-derives every paper number from scratch
 ├── data/
 │   ├── README.md                          # Schema + provenance
 │   ├── spx_daily.parquet                  # ^GSPC OHLCV from Yahoo Finance
@@ -98,9 +99,14 @@ python code/04_subperiod_and_importance.py
 
 # Step 4: Diebold-Mariano significance tests.
 python code/05_dm_tests.py
+
+# Step 5: End-to-end audit. Re-derives every numerical claim in the paper
+# from the parquet, recomputes bold-cell winners for every table, re-runs
+# the DM tests, and verifies prose-level numbers. Exits 0 on full pass.
+python code/06_audit.py
 ```
 
-Steps 1–4 regenerate every numerical value reported in the paper. The Yahoo Finance pull may produce row counts that differ by a handful from the snapshots committed here if Yahoo has restated historical bars (it occasionally re-states corporate-action splits and dividends).
+Steps 1–4 regenerate every numerical value reported in the paper; step 5 is the verification pass that confirms the paper text matches the computed artifacts. The Yahoo Finance pull may produce row counts that differ by a handful from the snapshots committed here if Yahoo has restated historical bars (it occasionally re-states corporate-action splits and dividends).
 
 To recompile the paper:
 
@@ -116,6 +122,7 @@ This paper aims to score **2** on the Reproducibility Disclosure Score (RDS) rub
 - **Code public**: every Python script that touches the analysis is in `code/`, MIT-licensed.
 - **Data accessible**: the raw inputs are obtainable for free via the included `01_collect_data.py` script; the engineered feature panel and all model outputs are committed to this repo under CC0.
 - **Audit trail**: the `results/*.json` files contain not just headline metrics but also fit metadata (boosting-round count, HAC bandwidth, sample sizes by subperiod) so that any number in the paper can be traced back to a specific computation.
+- **Verifiable**: `code/06_audit.py` is an end-to-end checker that re-derives every numerical claim in the paper from `results/forecasts_5d.parquet`, cross-checks against the JSON metric files, recomputes the bold-cell winners for every table, re-runs all Diebold-Mariano tests, and verifies in-prose numbers. It currently passes 50+ checks. Run it before trusting any number in the paper.
 - **Issues**: corrections, extensions, and challenges to the rankings are welcomed via the [issue tracker](https://github.com/ayk5511/volatility-forecasting/issues).
 
 ## How to cite
