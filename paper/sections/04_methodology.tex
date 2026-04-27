@@ -23,7 +23,7 @@ We estimate three daily GARCH specifications using the \texttt{arch} Python pack
 
 where $\gamma$ captures the leverage effect: negative returns ($\mathbf{1}_{r_{t-1}<0} = 1$) receive a larger weight.
 
-GARCH models are refit every 22 trading days (approximately monthly) using an expanding window. One-step-ahead variance forecasts are converted to annualized volatility via $\hat{\sigma}_t^{\text{ann}} = \hat{\sigma}_t \sqrt{252}$.
+GARCH models are refit every 44 trading days (approximately bimonthly) on an expanding window of returns. The conditional-variance filter at time $t$ uses only returns observed through $t-1$, so there is no look-ahead in the filtering step. The fitted parameters, however, are estimated by quasi-maximum likelihood on the window through the end of each refit batch, which means the parameters do incorporate batch-period information. A strict walkforward design (parameters refit at the start of each batch and held fixed through it) is more conservative; we adopt the within-batch fit because parameter drift over a 44-day window is small and the simplification is common in the GARCH-evaluation literature. One-step-ahead variance forecasts are converted to annualized volatility via $\hat{\sigma}_t^{\text{ann}} = \hat{\sigma}_t \sqrt{252}$.
 
 \subsection{HAR-RV}
 
