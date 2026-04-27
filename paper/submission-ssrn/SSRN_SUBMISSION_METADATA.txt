@@ -1,0 +1,29 @@
+SSRN Submission Metadata for Paper 2
+=====================================
+
+Title: Volatility Forecasting with Machine Learning: A Horse Race Across GARCH, HAR, and Tree-Based Models
+
+Author: Akram Khan
+Affiliation: Independent Researcher
+ORCID: 0009-0002-7521-8648
+Email: 1819ak@gmail.com
+
+Abstract:
+We run a controlled horse race between seven volatility forecasting model configurations on S&P 500 realized volatility from January 2004 through November 2025: three GARCH variants (GARCH, EGARCH, GJR-GARCH), the HAR-RV model of Corsi (2009), gradient-boosted trees (LightGBM, XGBoost), and an equal-weight ensemble of LightGBM, HAR-RV, and GARCH(1,1). All models are evaluated on the same data, the same features, and the same expanding-window protocol over a January 2022 to November 2025 test period (980 trading days) that spans the 2022 bear market, the 2023 rally, the 2024-2025 rate normalization, and a 19.4% drawdown year. We use QLIKE as the primary loss function alongside RMSE and Mincer-Zarnowitz R-squared, and report Diebold-Mariano two-sided p-values for all key pairs. Three findings emerge. First, on the full test sample, GJR-GARCH is the best individual model (QLIKE 0.3447) and the equal-weight ensemble narrowly leads overall (QLIKE 0.3431), but the ensemble's edge over GJR-GARCH is not statistically significant (p = 0.90). Second, the full-sample ranking masks a substantial subperiod reversal: in 2022, the GARCH family wins (EGARCH best at QLIKE 0.2346), while LightGBM ranks last; in 2023-2025, tree models lead and HAR-RV is last. The 2022 environment is structurally out-of-distribution for models trained on 2004-2021, and the parametric GARCH variants adapt more gracefully than the 35-feature trees. Third, the LightGBM split-importance ranking shows that VIX is the dominant feature, the leverage effect is captured through three different return-based features that together account for roughly 19% of split count, and long-horizon RV signals dominate over short-horizon ones. We release the full LaTeX source, the data-collection and modeling scripts, the per-day forecasts of all seven models, and the supplementary metrics under permissive licenses, scoring 2 on the Reproducibility Disclosure Score rubric of Khan (2026).
+
+Keywords: volatility forecasting, realized volatility, GARCH, HAR-RV, machine learning, LightGBM, XGBoost, forecast combination, Diebold-Mariano test, reproducibility, S&P 500
+
+JEL Classification: C22, C45, C53, G17
+
+SSRN Classification Network: Financial Economics Network (FEN)
+Primary Category: Risk Management
+Secondary Categories: Asset Pricing, Machine Learning, Forecasting
+
+Replication code, data, and results: https://github.com/ayk5511/volatility-forecasting
+
+Self-citation network:
+- This paper extends Khan (2026), "Machine Learning in Quantitative Finance: A Systematic Review",
+  SSRN abstract 6562398, by applying its Reproducibility Disclosure Score rubric to the volatility
+  forecasting domain and providing an empirical case study that scores 2 on the rubric.
+
+File: Khan_2026_Volatility_Forecasting.pdf

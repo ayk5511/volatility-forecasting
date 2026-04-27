@@ -1,49 +1,94 @@
 \section{Robustness}\label{sec:robustness}
 
-We examine the robustness of our main findings along two dimensions: subperiod stability and statistical significance of forecast differences.
+We examine the robustness of our main findings along three dimensions: subperiod stability by calendar year, subperiod stability by realized-volatility regime, and statistical significance of forecast differences.
 
-\subsection{Subperiod Analysis}
+\subsection{Subperiod Analysis: Calendar Years}
 
-To test whether our rankings are driven by a specific market episode, we split the test period into two subsamples by volatility regime:
-
-\begin{itemize}[leftmargin=*]
-    \item \textbf{High volatility (2022):} The bear market year, with S\&P 500 down 19.4\% and 5-day realized volatility frequently exceeding 20\% annualized. This subsample contains 251 trading days.
-    \item \textbf{Lower volatility (2023--2025):} The recovery and rate-normalization period, with 5-day RV mostly below 15\% annualized. This subsample contains 729 trading days.
-\end{itemize}
+We first split the test period at the end of 2022. The 2022 subsample (251 trading days) covers the bear market year, with the S\&P 500 down 19.4\% and 5-day realized volatility frequently exceeding 20\% annualized. The 2023--2025 subsample (729 trading days) covers the recovery, the AI-driven rally, and the subsequent rate-normalization regime.
 
 \begin{table}[H]
 \centering
-\caption{QLIKE by subperiod (lower is better).}
-\label{tab:subperiod}
-\begin{tabular}{l c c}
+\small
+\setlength{\tabcolsep}{6pt}
+\caption{QLIKE by calendar-year subperiod (lower is better; \textbf{bold} = best in column).}
+\label{tab:subperiod_year}
+\begin{tabular}{l c c c}
 \toprule
-\textbf{Model} & \textbf{2022 (high vol)} & \textbf{2023--2025 (lower vol)} \\
+\textbf{Model} & \shortstack{\textbf{2022}\\\textbf{(high vol, $N$=251)}} & \shortstack{\textbf{2023--2025}\\\textbf{(lower vol, $N$=729)}} & \shortstack{\textbf{Full sample}\\\textbf{($N$=980)}} \\
 \midrule
-GARCH(1,1)   & Higher & Lower \\
-GJR-GARCH    & Best individual & Competitive \\
-LightGBM     & Competitive & Competitive \\
-HAR-RV       & Weakest & Competitive \\
-Ensemble     & Best overall & Best overall \\
+GARCH(1,1)   & 0.2579          & 0.4228          & 0.3806 \\
+EGARCH       & \textbf{0.2346} & 0.4230          & 0.3748 \\
+GJR-GARCH    & 0.2597          & 0.3740          & 0.3447 \\
+HAR-RV       & 0.3123          & 0.4568          & 0.4198 \\
+LightGBM     & 0.3429          & 0.3702          & 0.3632 \\
+XGBoost      & 0.3148          & \textbf{0.3693} & 0.3553 \\
+Ensemble     & 0.2616          & 0.3712          & \textbf{0.3431} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The key finding is that model rankings are broadly stable across regimes, but the \textit{magnitude} of differences is larger in 2022. In the high-volatility subsample, GJR-GARCH's advantage over standard GARCH is pronounced---the leverage effect matters most when markets are falling sharply. In the lower-volatility period, all models converge, because stable volatility is easy to forecast regardless of methodology. The ensemble maintains its lead in both subsamples, confirming that forecast combination is a robust strategy across regimes.
+The headline finding from this split is the model-class reversal across the two subperiods. In 2022, the GARCH family wins: EGARCH leads at QLIKE 0.2346, with GARCH(1,1) and GJR-GARCH within four basis points. The ensemble follows at 0.2616. The tree-based models trail substantially: XGBoost at 0.3148, LightGBM at 0.3429 (last). In 2023--2025 the order inverts: tree models lead (XGBoost 0.3693, LightGBM 0.3702, ensemble 0.3712 close behind), GJR-GARCH leads the GARCH family at 0.3740, and HAR-RV is last at 0.4568.
+
+The interpretation we favor is that 2022 was structurally out-of-distribution for models trained on 2004--2021. The high-volatility regime did not look like the training data: a GARCH model with a small parameter footprint adapts smoothly to the new variance level, whereas a 35-feature LightGBM relies on feature interactions that do not generalize. In 2023--2025 the regime is closer to historical norms, the larger feature panel pays off, and the trees overtake. The ensemble does not win either subperiod individually, but is never disastrously wrong, which is what averaging structurally diverse forecasters delivers.
+
+\subsection{Subperiod Analysis: Volatility Regime}
+
+A second split conditions on the realized volatility level itself rather than the calendar. We classify each test-day as \emph{high} or \emph{lower} regime based on whether actual 5-day RV exceeds the 75th percentile of test-period RV (threshold $\approx$ 14.4\% annualized). Compared with the calendar split, this isolates regime effects from secular calendar dynamics.
+
+\begin{table}[H]
+\centering
+\small
+\caption{QLIKE by realized-volatility regime, top-quartile RV vs.\ remaining three quartiles.}
+\label{tab:subperiod_regime}
+\begin{tabular}{l c c}
+\toprule
+\textbf{Model} & \shortstack{\textbf{High vol}\\\textbf{(top quartile, $N$=245)}} & \shortstack{\textbf{Lower vol}\\\textbf{(bottom 3Q, $N$=735)}} \\
+\midrule
+GARCH(1,1)   & 0.4154          & 0.3690 \\
+EGARCH       & 0.3829          & 0.3721 \\
+GJR-GARCH    & \textbf{0.3303} & 0.3495 \\
+HAR-RV       & 0.7140          & 0.3217 \\
+LightGBM     & 0.4502          & \textbf{0.3343} \\
+XGBoost      & 0.4250          & 0.3321 \\
+Ensemble     & 0.4232          & 0.3164 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two patterns emerge. First, GJR-GARCH is the best individual model in the high-RV quartile (QLIKE 0.3303), confirming that the asymmetric specification handles tail-volatility days better than the others. HAR-RV collapses (QLIKE 0.7140) in this quartile because the linear regression on past RV cannot extrapolate to the highest RV days; this dominates HAR-RV's weak full-sample showing. Second, in the lower-volatility quartiles, the differences across models compress and the rank order changes again, with LightGBM and XGBoost narrowly ahead and the ensemble at 0.3164 essentially tied.
+
+These two splits tell a consistent story: the full-sample QLIKE ranking averages over qualitatively different forecasting environments, and a practitioner who reads only the full-sample number is missing where each model fails.
 
 \subsection{Statistical Significance}
 
-We test whether the QLIKE differences between key model pairs are statistically significant using the \citet{DieboldMariano1995} test, applied to the loss differential series $d_t = L(\sigma_t, \hat{\sigma}_t^A) - L(\sigma_t, \hat{\sigma}_t^B)$ where $L$ is the QLIKE loss. The null hypothesis is equal expected loss.
+We test whether the QLIKE differences between key model pairs are statistically meaningful using the \citet{DieboldMariano1995} test, applied to the loss differential series $d_t = L(\sigma_t, \hat{\sigma}_t^A) - L(\sigma_t, \hat{\sigma}_t^B)$ where $L$ is the QLIKE loss. We use a HAC (Newey--West) standard error with bandwidth equal to the forecast horizon minus one ($h - 1 = 4$). The null hypothesis is equal expected loss; reported $p$-values are two-sided.
 
-Over the full test period ($N = 980$), the following pairwise comparisons are informative:
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\caption{Diebold--Mariano two-sided test on full-sample QLIKE loss differentials ($N=980$). Negative mean diff means model $A$ beats $B$.}
+\label{tab:dm}
+\begin{tabular}{l r r r l}
+\toprule
+\textbf{Pair $A$ vs.\ $B$} & \textbf{Mean diff} & \textbf{$t$-stat} & \textbf{$p$-value} & \textbf{Conclusion} \\
+\midrule
+GJR-GARCH vs.\ GARCH(1,1)  & $-$0.0358 & $-$2.14 & 0.033 & GJR-GARCH, sig.\ 5\% \\
+GJR-GARCH vs.\ EGARCH      & $-$0.0301 & $-$2.00 & 0.045 & GJR-GARCH, sig.\ 5\% \\
+GJR-GARCH vs.\ HAR-RV      & $-$0.0751 & $-$2.99 & 0.003 & GJR-GARCH, sig.\ 1\% \\
+Ensemble vs.\ GARCH(1,1)   & $-$0.0375 & $-$3.25 & 0.001 & Ensemble, sig.\ 1\% \\
+Ensemble vs.\ GJR-GARCH    & $-$0.0016 & $-$0.12 & 0.903 & Indistinguishable \\
+Ensemble vs.\ LightGBM     & $-$0.0201 & $-$0.96 & 0.337 & Indistinguishable \\
+LightGBM vs.\ HAR-RV       & $-$0.0566 & $-$1.48 & 0.140 & Indistinguishable \\
+XGBoost vs.\ LightGBM      & $-$0.0079 & $-$0.92 & 0.359 & Indistinguishable \\
+EGARCH vs.\ GARCH(1,1)     & $-$0.0058 & $-$0.84 & 0.399 & Indistinguishable \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{itemize}[leftmargin=*]
-    \item \textbf{GJR-GARCH vs.\ GARCH(1,1):} The asymmetric specification significantly outperforms the symmetric one ($p < 0.05$), confirming that the leverage effect is statistically meaningful, not just economically meaningful.
-    \item \textbf{Ensemble vs.\ GARCH(1,1):} The ensemble significantly outperforms standard GARCH ($p < 0.05$).
-    \item \textbf{LightGBM vs.\ HAR-RV:} LightGBM outperforms HAR-RV, though the difference is significant only at the 10\% level, reflecting HAR-RV's competitiveness despite its simplicity.
-    \item \textbf{Ensemble vs.\ GJR-GARCH:} The ensemble edges out GJR-GARCH on QLIKE, but the difference is not statistically significant ($p > 0.10$). The two models are statistically indistinguishable over this test period.
-\end{itemize}
+Three takeaways from \Cref{tab:dm}. First, the GJR asymmetric specification is significantly better than the other GARCH variants at the 5\% level, and significantly better than HAR-RV at the 1\% level: the leverage effect is statistically meaningful, not just economically meaningful. Second, the ensemble is statistically indistinguishable from GJR-GARCH ($p = 0.90$), so the headline result that "the ensemble wins on QLIKE" should be read as "the ensemble matches GJR-GARCH while being more robust across subperiods," not as a clear-cut victory. Third, LightGBM does not beat HAR-RV at conventional significance levels ($p = 0.14$), and the tree models do not separate from each other (XGBoost vs.\ LightGBM, $p = 0.36$). The visual rankings in \Cref{tab:main_results} look cleaner than the statistics actually support.
 
-The practical implication is clear: if forced to choose a single model, GJR-GARCH is a defensible choice. If combining models is feasible (as it usually is), the ensemble is weakly preferred.
+The practical implication: if forced to choose a single model, GJR-GARCH is a defensible choice and is statistically as good as the ensemble on the full sample. If a practitioner cares about robustness across regimes (the subperiod tables above), the ensemble is the safer choice, accepting that the difference is not significant on any one period.
 
 \subsection{Limitations and Extensions}
 

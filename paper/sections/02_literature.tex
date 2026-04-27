@@ -1,16 +1,16 @@
 \section{Related Literature}\label{sec:literature}
 
-Volatility forecasting has a deep literature, and we do not attempt to survey it comprehensively---\citet{Poon2003} and \citet{Andersen2006} provide book-length treatments. Instead, we focus on the developments most relevant to our comparison: the GARCH family, realized volatility models, and the ML approaches that have emerged since roughly 2015.
+Volatility forecasting has a deep literature, and we do not attempt to survey it here; \citet{Poon2003} and \citet{Andersen2006} provide book-length treatments, and \citet{Khan2026} surveys the post-2015 ML applications more broadly. Instead, we focus on the developments most directly relevant to our comparison: the GARCH family, realized volatility models, and the ML approaches that have emerged since roughly 2015.
 
 \subsection{GARCH Models}
 
-The GARCH(1,1) model of \citet{Bollerslev1986} remains the workhorse of conditional volatility modeling. Its asymmetric variants---the EGARCH of \citet{Nelson1991} and the GJR-GARCH of \citet{Glosten1993}---capture the leverage effect (negative returns increase volatility more than positive returns of the same magnitude), a well-documented empirical regularity. \citet{Hansen2005} conduct a large-scale comparison of 330 GARCH variants and conclude that no model consistently dominates the simple GARCH(1,1), a finding that influenced our decision to include the standard specification alongside EGARCH and GJR-GARCH rather than searching for exotic variants.
+The GARCH(1,1) model of \citet{Bollerslev1986} remains the workhorse of conditional volatility modeling. Its asymmetric variants, the EGARCH of \citet{Nelson1991} and the GJR-GARCH of \citet{Glosten1993}, capture the leverage effect (negative returns increase volatility more than positive returns of the same magnitude), a well-documented empirical regularity. \citet{Hansen2005} conduct a large-scale comparison of 330 GARCH variants and conclude that no model consistently dominates the simple GARCH(1,1), a finding that influenced our decision to include the standard specification alongside EGARCH and GJR-GARCH rather than searching for exotic variants.
 
 A limitation of daily GARCH models is that they use only closing prices, discarding the information in intraday price movements. This motivates the realized volatility approach.
 
 \subsection{Realized Volatility and the HAR Model}
 
-Realized volatility (RV), computed as the sum of squared intraday returns, provides a more accurate measure of true volatility than GARCH-implied estimates \citep{Andersen2003}. The Heterogeneous Autoregressive (HAR) model of \citet{Corsi2009} forecasts RV using three components---daily, weekly, and monthly lagged RV---motivated by the heterogeneous market hypothesis that traders at different horizons contribute to different volatility dynamics. Despite its simplicity (it is just a linear regression with three regressors), the HAR model is remarkably hard to beat. \citet{Bollerslev2016} extend HAR with jump components and find modest improvements. \citet{Patton2015} show that the HAR structure captures the long-memory properties of volatility well.
+Realized volatility (RV), computed as the sum of squared intraday returns, provides a more accurate measure of true volatility than GARCH-implied estimates \citep{Andersen2003}. The Heterogeneous Autoregressive (HAR) model of \citet{Corsi2009} forecasts RV using three components (daily, weekly, and monthly lagged RV), motivated by the heterogeneous market hypothesis that traders at different horizons contribute to different volatility dynamics. Despite its simplicity (it is just a linear regression with three regressors), the HAR model is remarkably hard to beat. \citet{Bollerslev2016} extend HAR with jump components and find modest improvements. \citet{Patton2015} show that the HAR structure captures the long-memory properties of volatility well.
 
 When intraday data is unavailable (as is the case for many practitioners and for longer historical samples), daily proxies for realized volatility can be constructed from daily OHLC prices using range-based estimators \citep{Parkinson1980, GarmanKlass1980}. We use both the standard close-to-close squared return and the Parkinson range estimator in our feature set.
 
@@ -32,7 +32,7 @@ The appeal of tree-based methods for volatility forecasting is that they natural
 
 \subsubsection{Forecast Combination}
 
-A robust finding across the forecasting literature---not just in finance---is that combining forecasts from multiple models typically outperforms any individual model \citep{Timmermann2006}. For volatility specifically, \citet{Patton2019} show that simple equal-weight combinations of volatility forecasts are competitive with sophisticated combination schemes based on past performance. This motivates our inclusion of a simple ensemble as a benchmark.
+A finding that holds across the forecasting literature, not just in finance, is that combining forecasts from multiple models typically outperforms any individual model \citep{Timmermann2006}. For volatility specifically, \citet{Patton2019} show that simple equal-weight combinations of volatility forecasts are competitive with sophisticated combination schemes based on past performance. This motivates our inclusion of a simple ensemble as a benchmark.
 
 \subsection{Gap in the Literature}
 
