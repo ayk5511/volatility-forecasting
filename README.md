@@ -2,13 +2,14 @@
 
 This repository accompanies the paper:
 
-> Khan, A. (2026). *Volatility Forecasting with Machine Learning: A Horse Race Across GARCH, HAR, and Tree-Based Models.* SSRN Working Paper.
+> Khan, A. (2026). *Volatility Forecasting with Machine Learning: A Horse Race Across GARCH, HAR, and Tree-Based Models.* SSRN Working Paper [6663418](https://ssrn.com/abstract=6663418).
 
 It contains the LaTeX source, the data-collection and modeling scripts, the engineered feature panel, the per-day forecasts of all seven model configurations, and the full suite of metrics used to populate every table in the paper.
 
 **Author:** Akram Khan
 **ORCID:** [0009-0002-7521-8648](https://orcid.org/0009-0002-7521-8648)
 **Contact:** [1819ak@gmail.com](mailto:1819ak@gmail.com)
+**SSRN:** Abstract ID [6663418](https://ssrn.com/abstract=6663418)
 **Companion paper:** Khan (2026), *Machine Learning in Quantitative Finance: A Systematic Review*, SSRN [6562398](https://ssrn.com/abstract=6562398) — this paper extends that survey by applying its Reproducibility Disclosure Score rubric to a concrete empirical case study.
 
 ## Headline result
@@ -131,9 +132,11 @@ This paper aims to score **2** on the Reproducibility Disclosure Score (RDS) rub
 @techreport{KhanVol2026,
   title  = {Volatility Forecasting with Machine Learning: A Horse Race Across GARCH, HAR, and Tree-Based Models},
   author = {Khan, Akram},
-  institution = {SSRN Working Paper},
+  institution = {SSRN},
+  number = {6663418},
   year   = {2026},
-  url    = {https://github.com/ayk5511/volatility-forecasting}
+  url    = {https://ssrn.com/abstract=6663418},
+  note   = {Replication code, data, and results: https://github.com/ayk5511/volatility-forecasting}
 }
 ```
 

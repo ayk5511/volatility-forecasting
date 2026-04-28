@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: "Volatility Forecasting with Machine Learning: A Horse Race Across GARCH, HAR, and Tree-Based Models"
+message: "If you use this repository or its results, please cite the SSRN working paper."
+type: software
+authors:
+  - family-names: Khan
+    given-names: Akram
+    orcid: "https://orcid.org/0009-0002-7521-8648"
+    email: 1819ak@gmail.com
+date-released: 2026-04-27
+version: "1.0.0"
+url: "https://github.com/ayk5511/volatility-forecasting"
+repository-code: "https://github.com/ayk5511/volatility-forecasting"
+license: MIT
+keywords:
+  - volatility forecasting
+  - realized volatility
+  - GARCH
+  - HAR-RV
+  - LightGBM
+  - XGBoost
+  - Diebold-Mariano test
+  - reproducibility
+  - S&P 500
+preferred-citation:
+  type: article
+  title: "Volatility Forecasting with Machine Learning: A Horse Race Across GARCH, HAR, and Tree-Based Models"
+  authors:
+    - family-names: Khan
+      given-names: Akram
+      orcid: "https://orcid.org/0009-0002-7521-8648"
+  year: 2026
+  month: 4
+  journal: "SSRN Working Paper"
+  number: "6663418"
+  url: "https://ssrn.com/abstract=6663418"
