@@ -29,7 +29,7 @@ Ensemble     & 0.2616          & 0.3712          & \textbf{0.3431} \\
 
 The headline finding from this split is the model-class reversal across the two subperiods. In 2022, the GARCH family wins: EGARCH leads at QLIKE 0.2346, with GARCH(1,1) and GJR-GARCH within four basis points. The ensemble follows at 0.2616. The tree-based models trail substantially: XGBoost at 0.3148, LightGBM at 0.3429 (last). In 2023--2025 the order inverts: tree models lead (XGBoost 0.3693, LightGBM 0.3702, ensemble 0.3712 close behind), GJR-GARCH leads the GARCH family at 0.3740, and HAR-RV is last at 0.4568.
 
-The interpretation we favor is that 2022 was structurally out-of-distribution for models trained on 2004--2021. The high-volatility regime did not look like the training data: a GARCH model with a small parameter footprint adapts smoothly to the new variance level, whereas a 35-feature LightGBM relies on feature interactions that do not generalize. In 2023--2025 the regime is closer to historical norms, the larger feature panel pays off, and the trees overtake. The ensemble does not win either subperiod individually, but is never disastrously wrong, which is what averaging structurally diverse forecasters delivers.
+The interpretation we favor is that 2022 was structurally out-of-distribution for models trained on 2004--2021. The high-volatility regime did not look like the training data: a GARCH model with a small parameter footprint adapts smoothly to the new variance level, whereas a 30-feature LightGBM relies on feature interactions that do not generalize. In 2023--2025 the regime is closer to historical norms, the larger feature panel pays off, and the trees overtake. The ensemble does not win either subperiod individually, but is never disastrously wrong, which is what averaging structurally diverse forecasters delivers.
 
 \subsection{Subperiod Analysis: Volatility Regime}
 
@@ -80,7 +80,7 @@ We test whether the QLIKE differences between key model pairs are statistically 
 GJR-GARCH vs.\ GARCH(1,1)  & $-$0.0358 & $-$2.14 & 0.033 & GJR-GARCH, sig.\ 5\% \\
 GJR-GARCH vs.\ EGARCH      & $-$0.0301 & $-$2.00 & 0.045 & GJR-GARCH, sig.\ 5\% \\
 GJR-GARCH vs.\ HAR-RV      & $-$0.0751 & $-$2.99 & 0.003 & GJR-GARCH, sig.\ 1\% \\
-Ensemble vs.\ GARCH(1,1)   & $-$0.0375 & $-$3.25 & 0.001 & Ensemble, sig.\ 1\% \\
+Ensemble vs.\ GARCH(1,1)   & $-$0.0374 & $-$3.25 & 0.001 & Ensemble, sig.\ 1\% \\
 Ensemble vs.\ GJR-GARCH    & $-$0.0016 & $-$0.12 & 0.903 & Indistinguishable \\
 Ensemble vs.\ LightGBM     & $-$0.0201 & $-$0.96 & 0.337 & Indistinguishable \\
 LightGBM vs.\ HAR-RV       & $-$0.0566 & $-$1.48 & 0.140 & Indistinguishable \\
@@ -93,6 +93,51 @@ EGARCH vs.\ GARCH(1,1)     & $-$0.0058 & $-$0.84 & 0.399 & Indistinguishable \\
 Three takeaways from \Cref{tab:dm}. First, the GJR asymmetric specification is significantly better than the other GARCH variants at the 5\% level, and significantly better than HAR-RV at the 1\% level: the leverage effect is statistically meaningful, not just economically meaningful. Second, the ensemble is statistically indistinguishable from GJR-GARCH ($p = 0.90$), so the headline result that "the ensemble wins on QLIKE" should be read as "the ensemble matches GJR-GARCH while being more robust across subperiods," not as a clear-cut victory. Third, LightGBM does not beat HAR-RV at conventional significance levels ($p = 0.14$), and the tree models do not separate from each other (XGBoost vs.\ LightGBM, $p = 0.36$). The visual rankings in \Cref{tab:main_results} look cleaner than the statistics actually support.
 
 The practical implication: if forced to choose a single model, GJR-GARCH is a defensible choice and is statistically as good as the ensemble on the full sample. If a practitioner cares about robustness across regimes (the subperiod tables above), the ensemble is the safer choice, accepting that the difference is not significant on any one period.
+
+\subsection{Joint and Multiple-Model Tests: MCS, SPA, and Reality Check}\label{sec:mcs_spa}
+
+The pairwise Diebold--Mariano tests in \Cref{tab:dm} are exposed to multiple-testing inflation: running DM on every pair of models in the panel inflates the family-wise error rate above the nominal $\alpha$. Three significance frameworks are designed to address this by jointly assessing the entire panel: the Hansen-Lunde-Nason Model Confidence Set \citep{HansenLundeNason2011}, the Hansen Superior Predictive Ability test \citep{Hansen2005}, and the White Reality Check \citep{White2000}. We compute all three using the open-source \texttt{vol-eval} package of \citet{Khan2026VolEval}, with stationary-bootstrap resampling \citep{PolitisRomano1994}, the QLIKE loss function \citep{Patton2011}, HAC bandwidth $h-1=4$, and 2000 bootstrap replications.
+
+\textbf{Model Confidence Set.} \Cref{tab:mcs_results} reports the MCS at 90\% and 95\% confidence on full-sample QLIKE.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Hansen-Lunde-Nason Model Confidence Set (MCS) on full-sample 5-day QLIKE losses ($N=980$). The MCS is the set of models that cannot be rejected as containing the best forecaster at the stated confidence level. Computed with \texttt{vol-eval} 0.1.0 \citep{Khan2026VolEval}, 2000 stationary-bootstrap replications, $t_{\max}$ statistic.}
+\label{tab:mcs_results}
+\begin{tabular}{l p{9.5cm}}
+\toprule
+\textbf{MCS confidence level} & \textbf{Survivors (out of 7 models)} \\
+\midrule
+90\% MCS & 6: GARCH, EGARCH, GJR-GARCH, LightGBM, XGBoost, Ensemble \\
+95\% MCS & 7: all models survive \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 90\% MCS eliminates only HAR-RV (elimination $p$-value 0.060), consistent with HAR-RV's full-sample QLIKE of 0.4198 being clearly worse than the field. At the 95\% confidence level even HAR-RV is not eliminated. The MCS thus tells a sharper version of the same story as the pairwise DM tests: with the exception of HAR-RV at the 90\% level, the field cannot reject equal expected loss across the panel. The ``ensemble narrowly leads'' observation in \Cref{sec:results} is a point-estimate statement, not a separation in distribution.
+
+\textbf{Superior Predictive Ability and Reality Check.} \Cref{tab:spa_results} reports SPA \citep{Hansen2005} and Reality Check \citep{White2000} $p$-values for three candidate ``benchmarks'': HAR-RV (the standard linear benchmark for RV), GARCH(1,1) (the standard parametric benchmark), and GJR-GARCH (our best individual model). The SPA and Reality Check nulls are that the benchmark is not outperformed by any competitor in the panel; rejecting the null means some alternative is significantly better.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Hansen SPA test \citep{Hansen2005} and White Reality Check \citep{White2000} $p$-values on full-sample 5-day QLIKE losses ($N=980$, 2000 stationary-bootstrap replications, computed with \texttt{vol-eval} 0.1.0 \citep{Khan2026VolEval}). Low $p$-values reject the null that the benchmark is the best.}
+\label{tab:spa_results}
+\begin{tabular}{l c c c c}
+\toprule
+\textbf{Benchmark} & \textbf{SPA $p_c$} & \textbf{SPA $p_l$} & \textbf{SPA $p_u$} & \textbf{Reality Check $p$} \\
+\midrule
+HAR-RV     & 0.003 & 0.003 & 0.003 & 0.003 \\
+GARCH(1,1) & 0.008 & 0.008 & 0.008 & --- \\
+GJR-GARCH  & 0.529 & 0.529 & 0.820 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The pattern is clean. Both HAR-RV and GARCH(1,1) are statistically dominated by some model in the panel ($p < 0.01$); the Reality Check confirms HAR-RV at the same significance level. GJR-GARCH, in contrast, is not dominated ($p_c = 0.53$, $p_u = 0.82$), confirming what the pairwise DM table had already shown: GJR-GARCH is statistically indistinguishable from the ensemble and is, in this sense, the model the panel cannot improve upon. A practitioner who reads \Cref{tab:main_results} as ``the ensemble is the best'' should read \Cref{tab:mcs_results,tab:spa_results} as ``the ensemble matches the best individual model, but the panel as a whole speaks with one voice---once you go beyond HAR-RV and standard GARCH, no model significantly dominates.''
+
+Running the MCS, SPA, and Reality Check is now a five-line operation against an open-source package with audit-grade tests \citep{Khan2026VolEval}. The under-reporting of these joint tests in published vol-forecasting comparisons documented in \citet{Khan2026VolEval} is therefore not a tooling problem; it is an editorial-norms problem.
 
 \subsection{Limitations and Extensions}
 

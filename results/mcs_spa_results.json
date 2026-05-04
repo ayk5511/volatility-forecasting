@@ -1,0 +1,98 @@
+{
+  "computed_with": "vol-eval 0.1.0",
+  "forecast_horizon_days": 5,
+  "n_observations": 980,
+  "mcs_90": {
+    "survivors": [
+      "GARCH",
+      "EGARCH",
+      "GJR-GARCH",
+      "LightGBM",
+      "XGBoost",
+      "Ensemble"
+    ],
+    "eliminated_in_order": [
+      "HAR-RV"
+    ],
+    "eliminated_p_values": [
+      0.0595
+    ],
+    "alpha": 0.1,
+    "n_bootstrap": 2000,
+    "statistic": "t_max"
+  },
+  "mcs_95": {
+    "survivors": [
+      "GARCH",
+      "EGARCH",
+      "GJR-GARCH",
+      "HAR-RV",
+      "LightGBM",
+      "XGBoost",
+      "Ensemble"
+    ],
+    "eliminated_in_order": [],
+    "eliminated_p_values": [],
+    "alpha": 0.05,
+    "n_bootstrap": 2000,
+    "statistic": "t_max"
+  },
+  "spa_har_benchmark": {
+    "benchmark": "HAR-RV",
+    "alternatives": [
+      "GARCH",
+      "EGARCH",
+      "GJR-GARCH",
+      "LightGBM",
+      "XGBoost",
+      "Ensemble"
+    ],
+    "p_consistent": 0.003,
+    "p_lower": 0.003,
+    "p_upper": 0.003,
+    "n_bootstrap": 2000
+  },
+  "spa_garch_benchmark": {
+    "benchmark": "GARCH(1,1)",
+    "alternatives": [
+      "EGARCH",
+      "GJR-GARCH",
+      "HAR-RV",
+      "LightGBM",
+      "XGBoost",
+      "Ensemble"
+    ],
+    "p_consistent": 0.0075,
+    "p_lower": 0.0075,
+    "p_upper": 0.0075,
+    "n_bootstrap": 2000
+  },
+  "spa_gjr_benchmark": {
+    "benchmark": "GJR-GARCH",
+    "alternatives": [
+      "GARCH",
+      "EGARCH",
+      "HAR-RV",
+      "LightGBM",
+      "XGBoost",
+      "Ensemble"
+    ],
+    "p_consistent": 0.5285,
+    "p_lower": 0.5285,
+    "p_upper": 0.82,
+    "n_bootstrap": 2000
+  },
+  "reality_check_har_benchmark": {
+    "benchmark": "HAR-RV",
+    "alternatives": [
+      "GARCH",
+      "EGARCH",
+      "GJR-GARCH",
+      "LightGBM",
+      "XGBoost",
+      "Ensemble"
+    ],
+    "p_value": 0.003,
+    "n_bootstrap": 2000
+  }
+}

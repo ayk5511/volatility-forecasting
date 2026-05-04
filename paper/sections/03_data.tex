@@ -65,16 +65,18 @@ Several features of this data are worth noting. First, the distribution of reali
 
 \subsection{Feature Construction}
 
-We construct 35 features for the ML models, all strictly backward-looking to avoid look-ahead bias:
+We construct 30 features for the ML models, all strictly backward-looking to avoid look-ahead bias. The feature panel decomposes as follows (counts in parentheses sum to 30):
 
 \begin{itemize}[leftmargin=*]
-    \item \textbf{HAR components:} Daily ($\text{RV}_{t-1}^{(1)}$), weekly ($\text{RV}_{t-5:t-1}^{(5)}$), and monthly ($\text{RV}_{t-22:t-1}^{(22)}$) lagged realized volatility.
-    \item \textbf{Lagged RV and absolute returns:} Lags 1, 2, 3, 5, 10, and 22 of both 5-day RV and daily absolute returns.
-    \item \textbf{VIX features:} Lagged VIX level (1-day and 5-day average) and VIX daily change.
-    \item \textbf{Asymmetry:} Cumulative negative and positive returns over the past 5 days, capturing the leverage effect.
-    \item \textbf{Range volatility:} The Parkinson estimator.
-    \item \textbf{Volume:} Log trading volume, volume change, and volume relative to its 22-day moving average.
-    \item \textbf{Calendar:} Day-of-week indicators (Monday through Friday).
+    \item \textbf{HAR components (3):} Daily ($\text{RV}_{t-1}^{(1)}$), weekly ($\text{RV}_{t-5:t-1}^{(5)}$), and monthly ($\text{RV}_{t-22:t-1}^{(22)}$) lagged realized volatility.
+    \item \textbf{Lagged RV (6):} Lags 1, 2, 3, 5, 10, and 22 of 5-day realized volatility.
+    \item \textbf{Lagged absolute returns (6):} Lags 1, 2, 3, 5, 10, and 22 of daily absolute returns.
+    \item \textbf{VIX features (4):} Same-day VIX close, 1-day-lagged VIX, 5-day moving-average VIX, and VIX daily change.
+    \item \textbf{Asymmetry (2):} Cumulative negative and positive returns over the past 5 days, capturing the leverage effect.
+    \item \textbf{Range volatility (1):} The Parkinson high--low estimator.
+    \item \textbf{Volume (2):} Volume daily change and volume relative to its 22-day moving average.
+    \item \textbf{Calendar (5):} Day-of-week indicators (Monday through Friday); included as separate dummies for the LightGBM/XGBoost split logic rather than dropping a reference level.
+    \item \textbf{Daily log return (1):} The day-$t$ log return $r_t$ enters as a level feature alongside the lagged absolute-return panel.
 \end{itemize}
 
 The GARCH models use only the return series (they estimate their own conditional variance), while the HAR model uses only its three canonical components. The tree-based models (LightGBM, XGBoost) use the full feature set.

@@ -1,16 +1,63 @@
 \section{Conclusion}\label{sec:conclusion}
 
-This paper ran a controlled horse race between seven volatility forecasting model configurations (six individual models plus an equal-weight ensemble) on S\&P 500 data from 2004 through 2025, with out-of-sample evaluation over the 2022--2025 period. The results admit a three-sentence summary that hides as much as it reveals, so we offer it twice. The simple version: GJR-GARCH is the best individual model on the full test sample, tree-based methods (LightGBM, XGBoost) are strong runners-up, and an equal-weight ensemble of LightGBM, HAR-RV, and GARCH(1,1) beats everything on QLIKE by a hair. The honest version: the full-sample QLIKE ranking averages over two qualitatively different forecasting environments, the 2022 GARCH-friendly regime and the 2023--2025 tree-model-friendly regime, and the ensemble's win over GJR-GARCH is not statistically significant ($p = 0.90$).
+This paper ran a controlled horse race across seven volatility-forecasting
+configurations (six individual models plus an equal-weight ensemble) on
+S\&P 500 data from 2004 through 2025, with out-of-sample evaluation over
+the 2022--2025 period. The results admit a three-sentence summary that
+hides as much as it reveals, so we offer it twice. The simple version:
+GJR-GARCH is the best individual model on the full test sample, the tree
+methods (LightGBM, XGBoost) are strong runners-up, and an equal-weight
+ensemble of LightGBM, HAR-RV, and GARCH(1,1) beats everything on QLIKE by
+a hair. The honest version: the full-sample QLIKE ranking averages over
+two qualitatively different forecasting environments, the 2022
+GARCH-friendly regime and the 2023--2025 tree-friendly regime, and the
+ensemble's win over GJR-GARCH is not statistically significant
+($p = 0.90$).
 
 A few reflections beyond the numbers.
 
-First, the strength of GJR-GARCH on the full sample is a reminder that a well-specified parametric model can beat machine learning when the parametric assumption happens to match the data-generating process. The leverage effect is real, persistent, and well-captured by the GJR asymmetric term. ML models can learn this asymmetry from data (the negative-return features in our tree models serve a similar purpose), but they have to discover it from noisy examples rather than encoding it structurally. In a test period heavy on asymmetric downside risk, the parametric advantage won on average.
+\emph{The strength of GJR-GARCH on the full sample is a reminder that a
+well-specified parametric model can beat machine learning when the
+parametric assumption happens to match the data-generating process.} The
+leverage effect is real, persistent, and well-captured by the GJR
+asymmetric term. ML models can learn this asymmetry from data (the
+negative-return features in our tree models do something similar), but
+they have to discover it from noisy examples rather than encoding it
+structurally. In a test period heavy on asymmetric downside risk, the
+parametric advantage wins on average.
 
-Second, the underperformance of HAR-RV warrants comment. HAR has been a perennial strong performer in the volatility forecasting literature, often matching or beating ML models. Its full-sample last-place finish here (QLIKE 0.4198) is driven by collapse in the high-RV quartile (QLIKE 0.9015), where the linear regression on past RV cannot extrapolate to days of extreme volatility; in the lower three RV quartiles HAR-RV is competitive (QLIKE 0.2592, fifth of seven). HAR conditions only on past realized volatility and has no access to VIX or to asymmetric response terms. In calmer markets and at horizons where high-frequency RV is feasible, HAR would likely be more competitive.
+\emph{The underperformance of HAR-RV deserves comment.} HAR has been a
+perennial strong performer in the volatility-forecasting literature,
+often matching or beating ML models. Its full-sample last-place finish
+here (QLIKE 0.4198) is driven by collapse in the high-RV quartile (QLIKE
+0.9015), where the linear regression on past RV cannot extrapolate to
+days of extreme volatility. In the lower three RV quartiles HAR-RV is
+competitive (QLIKE 0.2592, fifth of seven). HAR conditions only on past
+realized volatility and has no access to VIX or to asymmetric response
+terms. In calmer markets and at horizons where high-frequency RV is
+feasible, HAR would likely be more competitive.
 
-Third, the ensemble result is the most practically useful finding, with a caveat. A risk manager who maintains three structurally diverse models and averages their forecasts will achieve QLIKE statistically indistinguishable from the best individual model, while being notably more robust to regime change: the ensemble was never first in any subperiod we examined, but never disastrously last either. This is what averaging structurally diverse forecasters delivers, and it is the version of the ensemble result we recommend reporting in practitioner contexts.
+\emph{The ensemble result is the most practically useful finding, with a
+caveat.} A risk manager who maintains three structurally diverse models
+and averages their forecasts achieves QLIKE statistically indistinguishable
+from the best individual model, while being notably more robust to regime
+change. The ensemble was never first in any subperiod we examined, but
+never disastrously last either. That is what averaging structurally
+diverse forecasters delivers, and it is the version of the
+``ensembles win'' result we recommend reporting in practitioner contexts.
 
-We close with limitations. Our comparison is limited to a single asset (the S\&P 500), and the results may not generalize to individual stocks, emerging markets, or other asset classes. We use daily data rather than intraday data; a HAR model with 5-minute realized volatility would likely outperform our daily version. We do not test transformer architectures, which have shown promise in recent work but require substantially more data and compute to train. The 5-day forecast horizon is the only one we evaluate; the ranking at the 1-day or 22-day horizon is a separate empirical question. Finally, our test period, while deliberately challenging, is still only four years long, so the regime-dependence story above is identified from two macro environments (2022 vs.\ 2023--2025) rather than many.
+A closing word on limitations. The comparison is limited to a single asset
+(the S\&P 500), and the results may not generalise to individual stocks,
+emerging markets, or other asset classes. We use daily data rather than
+intraday data; a HAR model fed 5-minute realized volatility would likely
+outperform our daily version. Transformer architectures are absent from
+the test, despite some recent promise, because they require substantially
+more data and compute to train than the rest of the field. The 5-day
+forecast horizon is the only one we evaluate; the ranking at the 1-day or
+22-day horizon is a separate empirical question. Finally, our test
+period, while deliberately challenging, is still only four years long, so
+the regime-dependence story above is identified from two macro
+environments (2022 vs.\ 2023--2025) rather than many.
 
 \subsection*{Reproducibility}
 

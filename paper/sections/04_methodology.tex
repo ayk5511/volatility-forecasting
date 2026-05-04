@@ -25,6 +25,21 @@ where $\gamma$ captures the leverage effect: negative returns ($\mathbf{1}_{r_{t
 
 GARCH models are refit every 44 trading days (approximately bimonthly) on an expanding window of returns. The conditional-variance filter at time $t$ uses only returns observed through $t-1$, so there is no look-ahead in the filtering step. The fitted parameters, however, are estimated by quasi-maximum likelihood on the window through the end of each refit batch, which means the parameters do incorporate batch-period information. A strict walkforward design (parameters refit at the start of each batch and held fixed through it) is more conservative; we adopt the within-batch fit because parameter drift over a 44-day window is small and the simplification is common in the GARCH-evaluation literature. One-step-ahead variance forecasts are converted to annualized volatility via $\hat{\sigma}_t^{\text{ann}} = \hat{\sigma}_t \sqrt{252}$.
 
+\paragraph{Refit-cadence asymmetry.} {\sloppy
+The GARCH cadence (44 days) is shorter than the HAR and tree cadence (66
+days). The asymmetry is deliberate. GARCH parameters
+$(\omega, \alpha, \beta, \gamma)$ govern conditional-variance
+\emph{persistence}; a stale parameter set during a regime shift is a known
+weakness of the family. Refitting bimonthly limits the window during
+which the parameter set can drift out of step with a high-vol episode and
+stays standard for the comparison literature. The HAR coefficients
+(three) and the tree feature panels (30 features) are estimated on enough
+observations that quarterly refitting balances responsiveness against the
+cost of retraining. The asymmetry could in principle alter rankings; the
+natural sensitivity check is to rerun the GARCH family at a 66-day
+cadence, which we treat as follow-up work rather than a rerun that
+affects the headline numbers reported here.\par}
+
 \subsection{HAR-RV}
 
 The Heterogeneous Autoregressive model \citep{Corsi2009} is a linear regression:
@@ -36,7 +51,7 @@ We estimate this by OLS with an expanding window, refitting every 66 trading day
 
 \subsection{LightGBM}
 
-LightGBM \citep{Ke2017} is a gradient-boosted decision tree algorithm that splits data leaf-wise rather than level-wise, achieving faster training with comparable accuracy. We use the full 35-feature set described in \Cref{sec:data}. Hyperparameters are:
+LightGBM \citep{Ke2017} is a gradient-boosted decision tree algorithm that splits data leaf-wise rather than level-wise, achieving faster training with comparable accuracy. We use the full 30-feature set described in \Cref{sec:data}. Hyperparameters are:
 
 \begin{table}[H]
 \centering

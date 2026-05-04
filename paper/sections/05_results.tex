@@ -13,7 +13,7 @@
 \textbf{Model} & \textbf{QLIKE} & \textbf{RMSE} & \textbf{MAE} & \textbf{MZ $R^2$} \\
 \midrule
 GARCH(1,1)   & 0.3806 & 0.0796 & 0.0523 & 0.2835 \\
-EGARCH(1,1)  & 0.3748 & 0.0769 & 0.0518 & 0.3097 \\
+EGARCH(1,1)  & 0.3748 & 0.0769 & 0.0520 & 0.3097 \\
 GJR-GARCH    & 0.3447 & \textbf{0.0734} & 0.0489 & \textbf{0.3802} \\
 \midrule
 HAR-RV       & 0.4198 & 0.0779 & 0.0507 & 0.2895 \\
@@ -30,7 +30,7 @@ Several patterns are worth highlighting.
 
 \textbf{GJR-GARCH is the best individual model on the full test sample.} This was not what we expected going in. The asymmetric GARCH specification, which gives negative returns a larger weight in the variance equation, outperforms both tree-based methods and the standard GARCH on QLIKE (0.3447 vs.\ 0.3806), delivers the lowest RMSE (0.0734), and achieves the highest Mincer-Zarnowitz $R^2$ (0.3802). The leverage effect, it turns out, is not just a well-known empirical regularity; it is one of the most valuable pieces of information for forecasting volatility over this test period. The 2022 bear market, with its sharp, asymmetric drawdowns, rewarded models that respond aggressively to negative returns. We caution that this full-sample ranking masks substantial regime dependence, which we examine in the subperiod analysis below and in \Cref{sec:robustness}.
 
-\textbf{Tree-based methods are strong but do not dominate.} LightGBM and XGBoost both outperform standard GARCH and EGARCH, confirming that conditioning on a richer feature set (VIX, lagged RV at multiple horizons, leverage indicators) improves forecasts. XGBoost edges out LightGBM on QLIKE (0.3553 vs.\ 0.3632) and produces the lowest MAE in the table (0.0470, narrowly ahead of GJR-GARCH's 0.0489), though the differences are small. On QLIKE and RMSE, however, neither tree model beats GJR-GARCH. This suggests that the asymmetric volatility response that GJR-GARCH captures parametrically with a single indicator term is the dominant signal, and the 35-feature panel available to the tree models adds only marginal value on top.
+\textbf{Tree-based methods are strong but do not dominate.} LightGBM and XGBoost both outperform standard GARCH and EGARCH, confirming that conditioning on a richer feature set (VIX, lagged RV at multiple horizons, leverage indicators) improves forecasts. XGBoost edges out LightGBM on QLIKE (0.3553 vs.\ 0.3632) and produces the lowest MAE in the table (0.0470, narrowly ahead of GJR-GARCH's 0.0489), though the differences are small. On QLIKE and RMSE, however, neither tree model beats GJR-GARCH. This suggests that the asymmetric volatility response that GJR-GARCH captures parametrically with a single indicator term is the dominant signal, and the 30-feature panel available to the tree models adds only marginal value on top.
 
 \textbf{HAR-RV underperforms, and the regime-conditional analysis in \Cref{sec:robustness} explains why.} The three-parameter linear model, which has been remarkably competitive in prior studies, ranks last on full-sample QLIKE (0.4198). The regime-conditional decomposition in \Cref{tab:subperiod_regime} shows that the underperformance is concentrated in the high-RV quartile, where HAR-RV's QLIKE balloons to 0.9015 because a linear regression on past RV cannot extrapolate to days of extreme realized volatility. In the lower-RV quartiles HAR-RV is the fifth-best of seven (QLIKE 0.2592), only modestly behind GJR-GARCH (0.2502) and competitive with the front of the field. HAR conditions only on past realized volatility and has no access to VIX or to asymmetric response terms, so when the RV level moves outside the convex hull of the training distribution the linear projection breaks. This is a known weakness of OLS on non-stationary RV; the 5-minute realized-volatility variants of HAR studied in the high-frequency literature partially address it, but require intraday data that we deliberately do not use here.
 
@@ -42,18 +42,18 @@ Several patterns are worth highlighting.
 
 \begin{table}[H]
 \centering
-\caption{Top 10 features by LightGBM split-importance (single fit on 2004--2021 train+validation window, $n_{\text{boost}} = 80$). Share is split count divided by total split count across all 35 features.}
+\caption{Top 10 features by LightGBM split-importance (single fit on 2004--2021 train+validation window, $n_{\text{boost}} = 80$). Share is split count divided by total split count across all 30 features.}
 \label{tab:feature_importance}
 \begin{tabular}{c l r r}
 \toprule
 \textbf{Rank} & \textbf{Feature} & \textbf{Splits} & \textbf{Share} \\
 \midrule
-1  & VIX close (lag 1)                         & 213 & 8.9\% \\
-2  & Daily log return (lag 0)                  & 198 & 8.3\% \\
+1  & VIX close, day $t$                        & 213 & 8.9\% \\
+2  & Daily log return, day $t$                 & 198 & 8.3\% \\
 3  & Negative return, 5-day cumulative         & 154 & 6.4\% \\
 4  & 5-day RV (lag 22)                         & 148 & 6.2\% \\
 5  & HAR monthly component                     & 147 & 6.1\% \\
-6  & VIX, 5-day average                        & 145 & 6.0\% \\
+6  & VIX 5-day average (lag 1)                 & 145 & 6.0\% \\
 7  & Volume / 22-day MA ratio                  & 131 & 5.5\% \\
 8  & 5-day RV (lag 5)                          & 113 & 4.7\% \\
 9  & Positive return, 5-day cumulative         & 108 & 4.5\% \\
@@ -74,6 +74,6 @@ The full-sample ranking masks substantial regime dependence. To examine this, we
 
 In 2022, the worst year of the test period for equity markets, EGARCH is the best individual model with QLIKE of 0.2346, followed by GARCH(1,1) at 0.2579 and GJR-GARCH at 0.2597. The tree-based models perform notably worse: XGBoost at 0.3148 and LightGBM at 0.3429, with LightGBM ranking last among the seven. The ensemble lands in the middle at 0.2616. In the calmer 2023--2025 period, the ranking inverts: tree models lead (XGBoost 0.3693, LightGBM 0.3702), the ensemble is competitive at 0.3712, and GJR-GARCH (0.3740) leads the GARCH family but trails the trees, with HAR-RV last at 0.4568.
 
-This inversion is the central nuanced finding of the paper. Tree-based ML models struggle in 2022 not because the 2022 vol level is unprecedented (the training data includes the 2008 financial crisis and the March 2020 COVID crash, both of which delivered higher RV than 2022) but because the immediate 2019--2021 validation period that drives early stopping and final feature importances was unusually calm. The trees' parameters are tuned to feature interactions that worked in the post-COVID-shock recovery, and 2022 is the first sustained departure from that calm regime. Parametric GARCH models, by contrast, have only three or four parameters fit on the full 2004--2021 history, which is dominated by long-run variance dynamics rather than recent regime tuning. In 2023--2025, when the RV level normalizes and intra-year regimes look more like the training distribution, the larger tree feature panel begins to pay off and tree models overtake.
+This inversion is the central subtle finding of the paper. Tree-based ML models struggle in 2022 not because the 2022 vol level is unprecedented (the training data includes the 2008 financial crisis and the March 2020 COVID crash, both of which delivered higher RV than 2022) but because the immediate 2019--2021 validation period that drives early stopping and final feature importances was unusually calm. The trees' parameters are tuned to feature interactions that worked in the post-COVID-shock recovery, and 2022 is the first sustained departure from that calm regime. Parametric GARCH models, by contrast, have only three or four parameters fit on the full 2004--2021 history, which is dominated by long-run variance dynamics rather than recent regime tuning. In 2023--2025, when the RV level normalizes and intra-year regimes look more like the training distribution, the larger tree feature panel begins to pay off and tree models overtake.
 
 The full-sample QLIKE is therefore a weighted average over two qualitatively different forecasting environments. A practitioner who reads only the full-sample ranking would conclude that GJR-GARCH is the best individual model, when in fact GJR-GARCH is third in 2022 and fourth in 2023--2025. The ensemble's robustness comes from precisely this regime-averaging property: it is rarely best in any one period, but never disastrously wrong either.
